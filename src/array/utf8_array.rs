@@ -12,7 +12,16 @@ use super::{Array, ArrayBuilder, ArrayEstimateExt, ArrayValidExt};
 pub struct Utf8Array {
     offset: Vec<usize>,
     valid: BitVec,
+    name: Option<String>, // name of the column
     data: Vec<u8>,
+}
+
+impl Utf8Array {
+    // set name of the column
+    // use String because I know little about `life time` :(
+    pub fn set_name(&mut self, s: String) {
+        self.name = Some(s);
+    }
 }
 
 impl Array for Utf8Array {
@@ -30,6 +39,10 @@ impl Array for Utf8Array {
 
     fn len(&self) -> usize {
         self.valid.len()
+    }
+
+    fn get_name(&self) -> Option<&String> {
+        self.name.as_ref()
     }
 }
 
@@ -49,11 +62,23 @@ impl ArrayEstimateExt for Utf8Array {
 pub struct Utf8ArrayBuilder {
     offset: Vec<usize>,
     valid: BitVec,
+    name: Option<String>,
     data: Vec<u8>,
 }
 
 impl ArrayBuilder for Utf8ArrayBuilder {
     type Array = Utf8Array;
+
+    fn with_name(name: &str) -> Self {
+        let mut offset = Vec::with_capacity(1);
+        offset.push(0);
+        Self {
+            offset,
+            data: Vec::with_capacity(0),
+            name: Some(String::from(name)),
+            valid: BitVec::with_capacity(0),
+        }
+    }
 
     fn with_capacity(capacity: usize) -> Self {
         let mut offset = Vec::with_capacity(capacity + 1);
@@ -61,6 +86,7 @@ impl ArrayBuilder for Utf8ArrayBuilder {
         Self {
             offset,
             data: Vec::with_capacity(capacity),
+            name: None,
             valid: BitVec::with_capacity(capacity),
         }
     }
@@ -86,6 +112,7 @@ impl ArrayBuilder for Utf8ArrayBuilder {
         Utf8Array {
             valid: self.valid,
             data: self.data,
+            name: self.name,
             offset: self.offset,
         }
     }

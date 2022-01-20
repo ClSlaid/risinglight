@@ -44,6 +44,9 @@ pub trait ArrayBuilder: Sized + Send + Sync + 'static {
         Self::with_capacity(0)
     }
 
+    /// Create a new builder with `name`
+    fn with_name(name: &str) -> Self;
+
     /// Create a new builder with `capacity`.
     fn with_capacity(capacity: usize) -> Self;
 
@@ -89,6 +92,9 @@ pub trait Array: Sized + Send + Sync + 'static {
     fn is_empty(&self) -> bool {
         self.len() == 0
     }
+
+    /// Get the name of the `Array`
+    fn get_name(&self) -> Option<&String>;
 }
 
 /// An extension trait for [`Array`].
@@ -150,7 +156,7 @@ pub enum ArrayImpl {
     Bool(BoolArray),
     // Int16(PrimitiveArray<i16>),
     Int32(I32Array),
-    Int64(PrimitiveArray<i64>),
+    Int64(I64Array),
     // Float32(PrimitiveArray<f32>),
     Float64(F64Array),
     Utf8(Utf8Array),
@@ -452,6 +458,27 @@ impl ArrayImpl {
     /// Check if array is empty.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+
+    /// Get column name
+    ///
+    /// For those anonymous (with no name) columns, String::from("<nil>") will be returned.
+    // TODO: Replace with macrons
+    pub fn get_col_name(&self) -> String {
+        let name = match self {
+            ArrayImpl::Bool(arr) => arr.get_name(),
+            ArrayImpl::Int32(arr) => arr.get_name(),
+            ArrayImpl::Int64(arr) => arr.get_name(),
+            ArrayImpl::Float64(arr) => arr.get_name(),
+            ArrayImpl::Utf8(arr) => arr.get_name(),
+            ArrayImpl::Decimal(arr) => arr.get_name(),
+            ArrayImpl::Date(arr) => arr.get_name(),
+            ArrayImpl::Interval(arr) => arr.get_name(),
+        };
+        match name {
+            Some(name) => name.clone(),
+            None => String::from("<nil>"),
+        }
     }
 }
 

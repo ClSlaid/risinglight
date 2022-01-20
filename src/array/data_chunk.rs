@@ -4,6 +4,7 @@ use std::fmt;
 use std::ops::RangeBounds;
 use std::sync::Arc;
 
+use prettytable::Row;
 use smallvec::SmallVec;
 
 use super::*;
@@ -31,6 +32,12 @@ impl FromIterator<ArrayImpl> for DataChunk {
 }
 
 impl DataChunk {
+    // Get column names
+    // those anonymous column's name will be `nil`
+    pub fn column_names(&self) -> Row {
+        self.arrays.iter().map(|col| col.get_col_name()).collect()
+    }
+
     /// Return a [`DataChunk`] with 1 element in 1 array.
     pub fn single(item: i32) -> Self {
         DataChunk {
@@ -95,6 +102,8 @@ impl fmt::Display for DataChunk {
         use prettytable::{format, Table};
         let mut table = Table::new();
         table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+        // write column names
+        table.add_row(self.column_names());
         for i in 0..self.cardinality() {
             let row = self.arrays.iter().map(|a| a.get_to_string(i)).collect();
             table.add_row(row);

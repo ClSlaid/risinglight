@@ -15,6 +15,7 @@ pub use self::simd::*;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PrimitiveArray<T: NativeType> {
     valid: BitVec,
+    name: Option<String>, // name of the column
     data: Vec<T>,
 }
 
@@ -48,6 +49,10 @@ impl<T: NativeType> Array for PrimitiveArray<T> {
     fn len(&self) -> usize {
         self.valid.len()
     }
+
+    fn get_name(&self) -> Option<&String> {
+        self.name.as_ref()
+    }
 }
 
 impl<T: NativeType> ArrayValidExt for PrimitiveArray<T> {
@@ -65,15 +70,25 @@ impl<T: NativeType> ArrayEstimateExt for PrimitiveArray<T> {
 /// A builder that constructs a [`PrimitiveArray`] from `Option<T>`.
 pub struct PrimitiveArrayBuilder<T: NativeType> {
     valid: BitVec,
+    name: Option<String>,
     data: Vec<T>,
 }
 
 impl<T: NativeType> ArrayBuilder for PrimitiveArrayBuilder<T> {
     type Array = PrimitiveArray<T>;
 
+    fn with_name(name: &str) -> Self {
+        Self {
+            valid: BitVec::with_capacity(0),
+            name: Some(String::from(name)),
+            data: Vec::with_capacity(0),
+        }
+    }
+
     fn with_capacity(capacity: usize) -> Self {
         Self {
             valid: BitVec::with_capacity(capacity),
+            name: None,
             data: Vec::with_capacity(capacity),
         }
     }
@@ -91,6 +106,7 @@ impl<T: NativeType> ArrayBuilder for PrimitiveArrayBuilder<T> {
     fn finish(self) -> PrimitiveArray<T> {
         PrimitiveArray {
             valid: self.valid,
+            name: self.name,
             data: self.data,
         }
     }
