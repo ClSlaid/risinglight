@@ -67,12 +67,12 @@ impl Database {
     }
 
     fn run_dt(&self) -> Result<Vec<DataChunk>, Error> {
-        let mut db_id_vec = I32ArrayBuilder::new();
-        let mut db_vec = Utf8ArrayBuilder::new();
-        let mut schema_id_vec = I32ArrayBuilder::new();
-        let mut schema_vec = Utf8ArrayBuilder::new();
-        let mut table_id_vec = I32ArrayBuilder::new();
-        let mut table_vec = Utf8ArrayBuilder::new();
+        let mut db_id_vec = I32ArrayBuilder::with_name("DB-ID");
+        let mut db_vec = Utf8ArrayBuilder::with_name("DB");
+        let mut schema_id_vec = I32ArrayBuilder::with_name("SCHEMA-ID");
+        let mut schema_vec = Utf8ArrayBuilder::with_name("SCHEMA");
+        let mut table_id_vec = I32ArrayBuilder::with_name("TABLE-ID");
+        let mut table_vec = Utf8ArrayBuilder::with_name("TABLE");
         for (_, database) in self.catalog.all_databases() {
             for (_, schema) in database.all_schemas() {
                 for (_, table) in schema.all_tables() {
